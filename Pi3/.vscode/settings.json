@@ -1,0 +1,3 @@
+{
+    "cmake.sourceDirectory": "${workspaceFolder}/include/u8g2-v2.27/u8g2-master"
+}
