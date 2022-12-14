@@ -10,7 +10,7 @@ bool BotaoAnt = 1;
 //===== Variaveis do encoder ====== //
 int NovaPosicao = 0;
 int PosicaoAnterior = 0;
-
+int tick =0;
 
 int verificaBot(){
     int BotaoOut = 0;
@@ -27,7 +27,7 @@ int verificaBot(){
 
 void tick_menu()
 {
-    int tick =0;
+    
     KY_040.tick(); // Verificar o estado do Codificador
     NovaPosicao = KY_040.getPosition();
 
@@ -42,11 +42,4 @@ void tick_menu()
     }
 
     PosicaoAnterior = NovaPosicao;
-}
-
-void tick(){
-    int tick =0;
-    KY_040.tick(); // Verificar o estado do Codificador
-    NovaPosicao = KY_040.getPosition();
-
 }

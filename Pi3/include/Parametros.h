@@ -1,17 +1,6 @@
 #include <Arduino.h>
 #include "IMEC_SPIFFS.h"
-#include <RotaryEncoder.h>
-
-RotaryEncoder KY_040(39, 34);
-#define SW 35 // Configura os pinos CLK e DT do Codificador KY-040
-
-bool BotaoSW = 0;
-bool BotaoAnt = 1;
-
-//===== Variaveis do encoder ====== //
-int NovaPosicao = 0;
-int PosicaoAnterior = 0;
-
+#include "Encoder.h"
 
 int QTDslv = 0;
 int VELslv = 0;
@@ -26,25 +15,17 @@ void beginIMEC(){
 }
 
 int newValue(int Valor){
-    KY_040.tick(); // Verificar o estado do Codificador
-    NewValue = KY_040.getPosition();
-
-    if(NewValue < 0){
-        NewValue = 0;
-    }
-
-    return NewValue;
-    /*
-    if(NewValue < OldValue){
-        Valor--;
-    }else if(NewValue > OldValue){
-        Valor++;
+    //tick_menu();
+    if(tick == 1){
+        Valor = Valor + 1;
+    }else if(tick == -1){
+       Valor = Valor - 1;
     }else{
-        Valor;
+       Valor = Valor + 0;
     }
-    NewValue = OldValue;
+    //NewValue = OldValue;
     return Valor;
-    */
+    
 }
 
 void save(String QTD, String VEL){

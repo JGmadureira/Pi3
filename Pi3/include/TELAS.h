@@ -51,46 +51,11 @@ int PosicaoMenu = 1;
 int QTD = 0;
 int VEL = 0;
 
-int tick =0;
-
 void beginTelas(){
     u8g2.begin();              // Inicia a Biblioteca do Display
     u8g2.setFont(FontePadrao); // Configura o tipo de Fonte u8g2_font_5x8_tf
     pinMode(SW, INPUT_PULLUP); // Habilita o GPIO35 como entrada com Pull-up para o SW
     pinMode(1, OUTPUT);        // Configura o pino do LED de luz de fundo do LCD (opcional)
-}
-
-int verificaBot(){
-    int BotaoOut = 0;
-    BotaoSW = digitalRead(SW); // Lê o estado do Pino SW (Eixo do Codificador)
-    if (BotaoSW > BotaoAnt){
-        BotaoOut = 1;
-    }else
-    {
-        BotaoOut = 0;
-    }
-    BotaoAnt = BotaoSW;
-    return BotaoOut;
-}
-
-void tick_menu()
-{
-    
-    KY_040.tick(); // Verificar o estado do Codificador
-    NovaPosicao = KY_040.getPosition();
-
-    if (PosicaoAnterior > NovaPosicao){
-        tick = 1;
-    }
-    else if (PosicaoAnterior < NovaPosicao){
-        tick = -1;
-    }
-    else{
-        tick = 0;
-    }
-
-    PosicaoAnterior = NovaPosicao;
-
 }
 
 void Fundo_Principal(){
@@ -151,8 +116,9 @@ void Fundo_Motores(){
 void Fundo_Parametros(){
     if(Flag_NovaTela){ 
         u8g2.firstPage();     // Este comando é parte do loop (imagem) que renderiza o conteúdo da exibição. (Obrigatório)
-       // VEL = VELslv;
-       // QTD = QTDslv;
+        VEL = VELslv;
+        QTD = QTDslv;
+       
     }
     u8g2.drawStr(10, 8, "AJUSTES DE PARAMETROS");                // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
     u8g2.drawLine(0, 9, 127, 9);                           // Desenha uma linha
