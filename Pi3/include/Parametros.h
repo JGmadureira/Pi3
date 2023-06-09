@@ -15,24 +15,21 @@ void beginIMEC(){
 }
 
 int newValue(int Valor){
+
     //tick_menu();
     if(tick == 1){
-        Valor = Valor + 1;
+        Valor++;    
     }else if(tick == -1){
-       Valor = Valor - 1;
-    }else{
-       Valor = Valor + 0;
+        Valor--;
     }
-    //NewValue = OldValue;
+    if(Valor < 0){
+        Valor = 0;
+    }
     return Valor;
-    
 }
 
 void save(String QTD, String VEL){
     writeFile(SPIFFS, "/qtd.txt", QTD);
     writeFile(SPIFFS, "/vel.txt", VEL);
-    beginIMEC();
+    
 }
-
-
-

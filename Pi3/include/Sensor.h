@@ -1,32 +1,32 @@
 #include <Arduino.h>
 
-#define Sensor_1 15
-#define Sensor_2 23
+#define Sensor_ETQ 15
+#define Sensor_CART 23
 
-bool leitura_1 = false;
-bool leitura_2 = false;
+bool leitura_Etq = false;
+bool leitura_Cart = false;
 
 void begin_Sensores(){
-    pinMode(Sensor_1, INPUT_PULLUP);
-    pinMode(Sensor_2, INPUT_PULLUP);
+    pinMode(Sensor_ETQ, INPUT_PULLUP);
+    pinMode(Sensor_CART, INPUT_PULLUP);
 }
 
-bool read_Sensor_1(){
-    if (digitalRead(Sensor_1) == true){
-        leitura_1 = true;
+bool read_Sensor_ETQ(){
+    if (digitalRead(Sensor_ETQ) == true){
+        leitura_Etq = true;
     }else{
-        leitura_1 = false;
+        leitura_Etq = false;
     }
-    Serial.println(leitura_1);
-    return leitura_1;
+    //Serial.println(leitura_Etq);
+    return leitura_Etq;
 }
 
-bool read_Sensor_2(){
-    if (digitalRead(Sensor_2) == true){
-        leitura_2 = true;
+bool read_Sensor_CART(){
+    if (digitalRead(Sensor_CART) == true){
+        leitura_Cart = true;
     }else{
-        leitura_2 = false;
+        leitura_Cart = false;
     }
-    //Serial.println(leitura_2);
-    return leitura_2;
+    //Serial.println(leitura_Cart);
+    return leitura_Cart;
 }

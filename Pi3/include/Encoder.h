@@ -40,6 +40,6 @@ void tick_menu()
     else{
         tick = 0;
     }
-
+    //Serial.println(tick);
     PosicaoAnterior = NovaPosicao;
 }

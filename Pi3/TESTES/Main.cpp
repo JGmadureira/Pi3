@@ -25,14 +25,16 @@ Program test for the KY-040 Encoder for ESP32, developed by JailsonBR using the 
 #include "TELAS.h"
 #include "IMEC_SPIFFS.h"
 
-
 void setup()
 {
   // u8g2.begin();                                            //Inicia a Biblioteca do Display
   // u8g2.setFont(FontePadrao);                               //Configura o tipo de Fonte u8g2_font_5x8_tf
   beginTelas();
+  configMotores();
   initSPIFFS();
   beginIMEC();
+  VEL = VELslv;
+  QTD = QTDslv;
   digitalWrite(1, HIGH); // Liga o pino do LED de luz de fundo do LCD (opcional)
   Serial.begin(115200); // Inicia a Transmissão Serial
   
@@ -40,13 +42,19 @@ void setup()
 
 void loop()
 {
- 
+  //Serial.print(digitalRead(39));
+  //Serial.println(digitalRead(34));
   tick_menu();
 
   switch (PosicaoMenu)
   {
   case menu_select_1:
     Main_1();
+
+    break;
+
+  case menu_select_11:
+    Main_11();
 
     break;
 
@@ -128,5 +136,4 @@ void loop()
     break;
   }
 
- 
 }

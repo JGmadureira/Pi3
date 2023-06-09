@@ -1,11 +1,11 @@
-#include "Arduino.h"
+#include <Arduino.h>
 #include <U8g2lib.h>
 #include <SPI.h>
 #include <Wire.h>
 
-#include "Motor.h"
-#include "Sensor.h"
+
 #include "Parametros.h"
+#include "processo.h"
 //#include "Encoder.h"
 
 #define FontePadrao u8g2_font_5x8_tf                       // Seleciona a fonte padrão
@@ -14,6 +14,7 @@ U8G2_ST7920_128X64_1_SW_SPI u8g2(U8G2_R0, 18, 19, 21, 22); // Enable, RW, RS, RE
 
 //====== Defines das Telas ========= //
 #define menu_select_1 1
+#define menu_select_11 11
 
 #define menu_select_2 2
 #define menu_select_21 21
@@ -44,12 +45,24 @@ U8G2_ST7920_128X64_1_SW_SPI u8g2(U8G2_R0, 18, 19, 21, 22); // Enable, RW, RS, RE
 
 bool Flag_NovaTela = 1;
 
-bool status_sensor_1 = 0;
-bool status_sensor_2 = 0;
+bool status_Sensor_ETQ = 0;
+bool status_Sensor_CART = 0;
 
 int PosicaoMenu = 1;
-int QTD = 0;
-int VEL = 0;
+
+
+unsigned long agora = 0;
+unsigned long antes = 0;
+
+bool timerDisplay(){
+    bool atualiza = 0;
+    if(millis() >= agora + 500) {
+    // Pausa de 3 segundos. Nada a fazer
+    agora = millis();
+    atualiza = 1;
+    }
+    return atualiza;
+}
 
 void beginTelas(){
     u8g2.begin();              // Inicia a Biblioteca do Display
@@ -66,15 +79,32 @@ void Fundo_Principal(){
     u8g2.drawStr(1, 18, "INICIAR PRESSIONE 'OK'");   // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
     u8g2.drawStr(1, 28, "QTD:"); // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
     u8g2.setCursor(22, 28);
-    u8g2.print(QTDslv); 
+    u8g2.print(QTD); 
     u8g2.drawStr(50, 28, "VEL:"); // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
     u8g2.setCursor(70, 28);
-    u8g2.print(VELslv); 
+    u8g2.print(VEL); 
     u8g2.drawStr(1, 40, "AJUSTES DE PARAMETROS");  // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
     u8g2.drawStr(1, 50, "AJUSTES MANUAIS");        // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
     u8g2.drawStr(1, 60, "STATUS");                 // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
     u8g2.nextPage();
     Flag_NovaTela = false;
+}
+
+void Fundo_Iniciar(){
+    
+    if(Flag_NovaTela) u8g2.firstPage(); // Este comando é parte do loop (imagem) que renderiza o conteúdo da exibição. (Obrigatório)
+
+    u8g2.drawStr(24, 8, "INICIAR COLAGEM");                // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
+    u8g2.drawLine(0, 9, 127, 9);                           // Desenha uma linha
+    u8g2.drawStr(1, 18, "POSI\xC7\xC3O MOTOR ETQ"); // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
+    u8g2.drawStr(1, 28, "POSI\xC7\xC3O MOTOR CART"); // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
+    u8g2.drawStr(1, 38, "ETQ"); // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
+    u8g2.drawStr(1, 48, "CART"); // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
+    u8g2.drawStr(1, 62, "RETORNAR");                 // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
+    
+    u8g2.nextPage();  
+    Flag_NovaTela = false;
+    
 }
 
 void Fundo_Menu_Ajustes(){
@@ -114,12 +144,9 @@ void Fundo_Motores(){
 }
 
 void Fundo_Parametros(){
-    if(Flag_NovaTela){ 
-        u8g2.firstPage();     // Este comando é parte do loop (imagem) que renderiza o conteúdo da exibição. (Obrigatório)
-        VEL = VELslv;
-        QTD = QTDslv;
+    if(Flag_NovaTela)u8g2.firstPage(); // Este comando é parte do loop (imagem) que renderiza o conteúdo da exibição. (Obrigatório)
+    
        
-    }
     u8g2.drawStr(10, 8, "AJUSTES DE PARAMETROS");                // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
     u8g2.drawLine(0, 9, 127, 9);                           // Desenha uma linha
     u8g2.drawStr(1, 20, "QUANTIDADE:"); // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
@@ -150,7 +177,7 @@ void UPD_Tela(int a, int b, int c, int d){// Atualiza a tela (a = atual b= click
         PosicaoMenu = a;
     }  
 }
-
+/*
 void giro_Motor(){
     if(tick == -1){
         giro_direita();
@@ -158,11 +185,47 @@ void giro_Motor(){
         giro_esquerda();
     }
 }
-
+*/
 void Main_1(){
     Fundo_Principal();
+    setEstadoColagemINI(); //essa função existe para sempre iniciar no estado de colagem 0
     u8g2.drawRFrame(0, 10, 127, 10, 2); // Desenha um retangulo em volta do titulo
-    UPD_Tela(1, 1, 3, 2);
+    UPD_Tela(1, 11, 3, 2);
+    
+}
+
+void Main_11(){
+    //Fundo_Iniciar();
+    
+    if(timerDisplay)Flag_NovaTela = true;
+    //if(status_Sensor_ETQ != read_Sensor_ETQ() || status_Sensor_CART != read_Sensor_CART() )Flag_NovaTela = true;
+    if(Flag_NovaTela) u8g2.firstPage(); // Este comando é parte do loop (imagem) que renderiza o conteúdo da exibição. (Obrigatório)
+    //u8g2.drawRFrame(0, 10, 127, 10, 2); // Desenha um retangulo em volta do titulo
+    
+    if(infoProcesso() != "0"){
+    do{
+    u8g2.drawStr(24, 8, "INICIAR COLAGEM");                // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
+    u8g2.drawLine(0, 9, 127, 9);                           // Desenha uma linha
+    u8g2.drawStr(1, 18, "QUANTIDADE"); // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
+    u8g2.setCursor(70, 18);
+    u8g2.print(QTD_ATUAL);
+    u8g2.setCursor(75, 18);
+    u8g2.print("/");
+    u8g2.setCursor(80, 18);
+    u8g2.print(QTD);
+    //u8g2.drawStr(1, 28, "PROCESSO: "); // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
+    u8g2.setCursor(1, 28);
+    u8g2.print(infoProcesso());
+    u8g2.setCursor(1, 38);
+    u8g2.print(VEL_CART);
+    u8g2.drawStr(1, 62, "'OK' RETORNAR");                 // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
+    }while(u8g2.nextPage());
+    }
+    
+    Flag_NovaTela = false;
+    UPD_Tela(11, 1, 11, 11);// a = atual b= click c= anterior d= proxima
+    
+    processoColagem();
     
 }
 
@@ -183,7 +246,10 @@ void Main_21(){
 
 void Main_211(){
     //VALOR QUANTIDADE
-    QTD = newValue(QTDslv);
+    QTD = newValue(QTD);
+    if(QTD < 1){
+        QTD = 1;
+    }
     Fundo_Parametros();
     u8g2.drawRFrame(60, 12, 60, 10, 2); // Desenha um retangulo em volta do titulo
     u8g2.setCursor(85,20);
@@ -201,7 +267,13 @@ void Main_22(){
 
 void Main_221(){
     //VALOR VELOCIDADE
-    VEL = newValue(VELslv);
+    VEL = newValue(VEL);
+    if(VEL < 1){
+        VEL = 1;
+    }
+    if(VEL > 3){
+        VEL = 3;
+    }
     Fundo_Parametros();
     u8g2.drawRFrame(60, 24, 60, 10, 2); // Desenha um retangulo em volta do titulo
     u8g2.setCursor(85,32);
@@ -221,13 +293,13 @@ void Main_23(){
 void Main_231(){
     
     if(Flag_NovaTela) u8g2.firstPage(); // Este comando é parte do loop (imagem) que renderiza o conteúdo da exibição. (Obrigatório)
-
+    save(String(QTD), String(VEL));
     u8g2.drawStr(28, 28, "VALORES SALVOS"); // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
     u8g2.drawStr(17, 52, "'OK' PARA RETORNAR"); // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
     u8g2.nextPage();
     Flag_NovaTela = false;
     UPD_Tela(231, 23, 231, 231);// a = atual b= click c= anterior d= proxima
-    save(String(QTD), String(VEL));
+    
 }
 
 void Main_24(){
@@ -247,7 +319,7 @@ void Main_3(){
 
 void Main_31(){
    
-    beginMotor(26, 27); //Motor 1
+    //MotorCART; //Motor 1
     Fundo_Menu_Ajustes();
     u8g2.drawRFrame(0, 10, 127, 10, 2); // Desenha um retangulo em volta do titulo
     UPD_Tela(31, 311, 34, 32);// a = atual b= click c= anterior d= proxima
@@ -256,7 +328,7 @@ void Main_31(){
 
 void Main_32(){
     
-    beginMotor(16, 17);//Motor 2
+   // MotorETQ();//Motor 2
     Fundo_Menu_Ajustes();
     u8g2.drawRFrame(0, 20, 127, 10, 2); // Desenha um retangulo em volta do titulo
     UPD_Tela(32, 311, 31, 33);// a = atual b= click c= anterior d= proxima
@@ -282,8 +354,7 @@ void Main_34(){
 void Main_311(){
     Fundo_Motores();                                  
     
-    giro_Motor();
-    u8g2.drawStr(20, 28, "ESQUERDA"); // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
+   // u8g2.drawStr(20, 28, "ESQUERDA"); // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
     u8g2.setFont(u8g2_font_open_iconic_all_4x_t);           //Configura a fonte para uma fonte diferente do padrão
     u8g2.drawGlyph(84, 55, 0x0043);                         //Exibe o Desenho de uma Flecha girando para a Esquerda
     u8g2.setFont(FontePadrao);                              //Retorna para a fonte padrão do projeto
@@ -295,7 +366,7 @@ void Main_311(){
 void Main_312(){
     Fundo_Motores();                                  
     
-    giro_Motor();
+    //giro_Motor();
     u8g2.drawStr(20, 28, "DIREITA"); // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
     u8g2.setFont(u8g2_font_open_iconic_all_4x_t);           //Configura a fonte para uma fonte diferente do padrão
     u8g2.drawGlyph(84, 55, 0x0042);                         //Exibe o Desenho de uma Flecha girando para a Direita
@@ -307,26 +378,26 @@ void Main_312(){
 
 void Main_331(){                                 
     //SENSOR
-    if(status_sensor_1 != read_Sensor_1() || status_sensor_2 != read_Sensor_2())Flag_NovaTela = true;
+    if(status_Sensor_ETQ != read_Sensor_ETQ() || status_Sensor_CART != read_Sensor_CART())Flag_NovaTela = true;
 
     if(Flag_NovaTela) u8g2.firstPage(); // Este comando é parte do loop (imagem) que renderiza o conteúdo da exibição. (Obrigatório)
    
     u8g2.drawStr(20, 8, "LEITURA DOS SENSORES");                // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
     u8g2.drawLine(0, 9, 127, 9);                   // Desenha uma linha
-    if(read_Sensor_1()){
-        u8g2.drawStr(20, 28, "SENSOR 1: INATIVO" );
+    if(read_Sensor_ETQ()){
+        u8g2.drawStr(20, 28, "SENSOR ETQ: INATIVO" );
     }else{
-        u8g2.drawStr(20, 28, "SENSOR 1: ATIVO" );
+        u8g2.drawStr(20, 28, "SENSOR ETQ: ATIVO" );
     }
-    if(read_Sensor_2()){
-        u8g2.drawStr(20, 38, "SENSOR 2: INATIVO" );
+    if(read_Sensor_CART()){
+        u8g2.drawStr(20, 38, "SENSOR CART: INATIVO" );
     }else{
-        u8g2.drawStr(20, 38, "SENSOR 2: ATIVO" );
+        u8g2.drawStr(20, 38, "SENSOR CART: ATIVO" );
     }
     u8g2.drawStr(1, 60, "'OK' PARA RETORNAR");                // Escreve o titulo o topo da página (semelhante ao print porem não aceita UTF-8)
    
-    status_sensor_1 = read_Sensor_1();
-    status_sensor_2 = read_Sensor_2();
+    status_Sensor_ETQ = read_Sensor_ETQ();
+    status_Sensor_CART = read_Sensor_CART();
     u8g2.nextPage();
     Flag_NovaTela = false;
     UPD_Tela(331, 33, 331, 331);// a = atual b= click c= anterior d= proxima

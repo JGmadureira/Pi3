@@ -36,9 +36,9 @@ void loop()
   Motor.moveRelativeInSteps(20000);
  // Motor2.moveRelativeInSteps(20000);
   delay(2000);
-  Motor.moveRelativeInSteps(-20000);
+  //Motor.moveRelativeInSteps(-20000);
  // Motor2.moveRelativeInSteps(-20000);
-  delay(2000);
+  //delay(2000);
 
 
 }
